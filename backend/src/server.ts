@@ -2,8 +2,8 @@ import express, { Application } from 'express';
 import products from './routes/products.js';
 import landing from './routes/landing.js';
 
-const app: Application = express();
-const port: number = 3000;
+const app = express();
+const port = 3000;
 
 app.use(express.json());
 
