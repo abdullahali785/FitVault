@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import Landing from "./landing";
 
-function App() {
+export function App() {
     return (
     <div> 
         <Landing />
     </div>
     );
 }
-
-export default App;
