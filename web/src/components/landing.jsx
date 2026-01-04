@@ -1,5 +1,5 @@
 import React, { useState } from "react";
 
-export function Landing() {
+export default function Landing() {
     return <div>Welcome to FitVault</div>
 }

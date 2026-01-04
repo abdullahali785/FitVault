@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Landing from "./landing";
 
-export function App() {
+export default function App() {
     return (
     <div> 
         <Landing />
