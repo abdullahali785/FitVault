@@ -30,6 +30,8 @@ model Product {
   category    String?
   gender      String?
   description String?
+  msrp Float?
+  currency String?
 
   offers      Offer[]
 
@@ -43,16 +45,17 @@ model Product {
 model Offer {
   id                 String   @id @default(uuid())
   productId          String
-  retailer           String
+  retailer           Retailer
   productUrl         String
   affiliateUrl       String?
 
   price              Float?
-  currency           String?
-  availability       String?
+  currency           String?      // Offer currency should override product currency
+  availability       Availability?
 
-  priceSource        String?  // "api" | "scrape" | "cache"
-  imageSource        String?  // "api" | "scrape"
+  priceSource        DataSource?
+  imageSource        DataSource?
+  sourceProductId    String?
 
   lastPriceUpdate    DateTime?
   lastScrapedAt      DateTime?
@@ -64,4 +67,25 @@ model Offer {
 
   @@index([productId])
   @@index([retailer])
+  @@unique([productId, retailer])
+}
+
+enum Retailer {
+  GOAT
+  STOCKX
+  ADIDAS
+  NIKE
+}
+
+enum Availability {
+  IN_STOCK
+  OUT_OF_STOCK
+  LIMITED
+  UNKNOWN
+}
+
+enum DataSource {
+  API
+  SCRAPE
+  CACHE
 }
