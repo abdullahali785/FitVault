@@ -20,19 +20,48 @@ model Brand {
 }
 
 model Product {
-  id           Int      @id @default(autoincrement())
-  brand        Brand    @relation(fields: [brandId], references: [id])
-  brandId      Int
-  name         String
-  category     String
-  price        Float
-  currency     String   @default("USD")
-  releaseDate  DateTime
-  rating       Float?
-  reviewCount  Int?
-  imageUrl     String
-  affiliateUrl String
-  lastUpdated  DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(uuid())
+  brandId     Int
+  brand       Brand   @relation(fields: [brandId], references: [id])
+
+  name        String
+  model       String?
+  sku         String?
+  category    String?
+  gender      String?
+  description String?
+
+  offers      Offer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([brandId])
+  @@index([sku])
+}
+
+model Offer {
+  id                 String   @id @default(uuid())
+  productId          String
+  retailer           String
+  productUrl         String
+  affiliateUrl       String?
+
+  price              Float?
+  currency           String?
+  availability       String?
+
+  priceSource        String?  // "api" | "scrape" | "cache"
+  imageSource        String?  // "api" | "scrape"
+
+  lastPriceUpdate    DateTime?
+  lastScrapedAt      DateTime?
+
+  product            Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([productId])
+  @@index([retailer])
 }
