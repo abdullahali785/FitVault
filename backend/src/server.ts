@@ -1,6 +1,6 @@
 import express, { Application } from 'express';
 import products from './routes/products.routes.js';
-import landing from './routes/landing.js';
+import landing from './routes/index.js';
 
 const app = express();
 const port = 3000;
