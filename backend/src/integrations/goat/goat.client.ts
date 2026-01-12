@@ -16,6 +16,22 @@ async function main() {
     return data;
 }
 
+
+function map(data: JSON) {
+    console.log(data);
+
+    // Identify required data
+    // Check validity
+    // Add to db
+
+    // id (stored as productId), sku, name, brand, category, imageurl, product_type, link, releaseDate
+
+    // We check products table if it has the product (check by sku)
+    // If no, we add the product 
+    // If yes, we just add the offer 
+}
+
+
 main()
-  .then(data => console.log(data))
+  .then(data => map(data[0]))
   .catch(err => console.error(err));
