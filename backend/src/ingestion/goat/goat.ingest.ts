@@ -1,73 +1,83 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import { PrismaClient, Retailer, Availability, DataSource } from "@prisma/client";
+import { ExtractedProduct } from "./goat.fetch.js";
 
-async function main() {
-    const response = await fetch('https://api.kicks.dev/v3/goat/products?query=&slugs=&sku=&page=1&limit=1&filters=brand+%3D+%27Nike%27&display%5Bvariants%5D=true&sort=rank%3Aasc&market=US', {
-        headers: {
-            Authorization: `Bearer ${process.env.GOAT_API_KEY}`
-        }
-    })
+const prisma = new PrismaClient();
 
-    if (!response.ok) {
-        throw new Error('Failed to fetch data');
+export async function ingestGoatProducts(products: ExtractedProduct[]) {
+    for (const product of products) {
+        await ingestSingleProduct(product);
     }
 
-    const data = await response.json();
-    return data;
+    console.log(`Ingested ${products.length} GOAT products`);
 }
 
-function extractProducts(response: any) {
-    if (!response?.data || !Array.isArray(response.data)) {
-        throw new Error("Invalid GOAT response shape");
+async function ingestSingleProduct(product: ExtractedProduct) {
+    await prisma.$transaction(async (tx) => {
+        const brand = await tx.brand.upsert({
+            where: { name: product.brandName },
+            update: {},
+            create: { name: product.brandName },
+        });
+
+        const dbProduct = await tx.product.upsert({
+            where: { sku: product.sku },
+            update: {
+                name: product.name,
+                model: product.model,
+                category: product.category,
+                gender: product.gender,
+                description: product.description,
+                updatedAt: new Date(),
+            },
+            create: {
+                brandId: brand.id,
+                name: product.name,
+                model: product.model,
+                sku: product.sku,
+                category: product.category,
+                gender: product.gender,
+                description: product.description,
+            },
+        });
+
+        await tx.offer.upsert({
+            where: {
+                productId_retailer: {
+                productId: dbProduct.id,
+                retailer: Retailer.GOAT,
+                },
+            },
+            update: {
+                price: product.price,
+                currency: product.currency,
+                availability: mapAvailability(product.availability),
+                priceSource: DataSource.API,
+                lastPriceUpdate: new Date(),
+            },
+            create: {
+                productId: dbProduct.id,
+                retailer: Retailer.GOAT,
+                productUrl: product.productUrl,
+                affiliateUrl: product.productUrl,
+                price: product.price,
+                currency: product.currency,
+                availability: mapAvailability(product.availability),
+                priceSource: DataSource.API,
+                sourceProductId: product.sourceProductId,
+                lastPriceUpdate: new Date(),
+            },
+        });
+    });
+}
+
+
+function mapAvailability(value: ExtractedProduct["availability"]): Availability {
+    switch (value) {
+        case "IN_STOCK":
+            return Availability.IN_STOCK;
+        case "OUT_OF_STOCK":
+            return Availability.OUT_OF_STOCK;
+        default:
+            return Availability.UNKNOWN;
     }
-
-    const results = [];
-
-    for (let res of response.data) {
-        const productData = {
-            brandName: res.brand,
-            name: res.name,
-            model: res.model ?? null,
-            sku: res.sku ?? null,
-            category: res.category ?? null,
-            description: res.description ?? null,
-        };
-
-        const averagePrice = extractAveragePrice(res.variants);
-        const availability = res.variants?.some(v => v.available && v.lowest_ask > 0) ? "IN_STOCK" : "OUT_OF_STOCK";
-
-        const offerData = {
-            retailer: "GOAT",
-            productUrl: res.link,
-            sourceProductId: String(res.id),
-            price: averagePrice,
-            currency: averagePrice ? "USD" : null,
-            availability,
-            priceSource: "API",
-        };
-
-        results.push({ productData, offerData });
-    }
-
-    return results;
 }
-
-function extractAveragePrice(variants: any[]): number | null {
-    if (!variants || variants.length === 0) return null;
-
-    const validPrices = variants
-        .filter(v => v.available === true && v.lowest_ask > 0)
-        .map(v => v.lowest_ask);
-
-    if (validPrices.length === 0) return null;
-
-    const sum = validPrices.reduce((acc, price) => acc + price, 0);
-    return Math.round(sum / validPrices.length);
-}
-
-main()
-    .then(data => {
-        const extracted = extractProducts(data);
-        console.log(JSON.stringify(extracted, null, 2));
-    })
-    .catch(err => console.error(err));
