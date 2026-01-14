@@ -22,11 +22,11 @@ model Brand {
 model Product {
   id          String   @id @default(uuid())
   brandId     Int
-  brand       Brand   @relation(fields: [brandId], references: [id])
+  brand       Brand    @relation(fields: [brandId], references: [id])
 
   name        String
   model       String?
-  sku         String?
+  sku         String   @unique
   category    String?
   gender      String?
   description String?

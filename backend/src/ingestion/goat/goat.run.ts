@@ -1,8 +1,9 @@
-import { fetchGoatProducts } from "./goat.fetch.js";
-import { ingestGoatProducts } from "./goat.ingest.js";
+import { fetchGoatProducts } from "./goat.fetch.ts";
+import { ingestGoatProducts } from "./goat.ingest.ts";
 
 async function run() {
     const products = await fetchGoatProducts();
+    // console.log(products);
     await ingestGoatProducts(products);
 }
 
