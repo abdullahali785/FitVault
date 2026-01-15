@@ -1,3 +1,4 @@
+import { mapCategory } from "../category.mapper.js";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -15,7 +16,8 @@ export type ExtractedProduct = {
     name: string;
     model: string | null;
     sku: string;
-    category: string | null;
+    category: "SHOES" | "APPAREL" | "OTHER";
+    rawCategory: string | null;
     gender: string | null;
     description: string | null;
 
@@ -66,7 +68,8 @@ function extractProduct(raw: any): ExtractedProduct | null {
         name: normStr(raw.name)!,
         model: normStr(raw.model),
         sku: normStr(raw.sku) ?? `GOAT-${raw.id}`,
-        category: normStr(raw.category),
+        category: mapCategory(raw.category),
+        rawCategory: normStr(raw.category),
         gender: normStr(raw.gender),
         description: normStr(raw.description),
 

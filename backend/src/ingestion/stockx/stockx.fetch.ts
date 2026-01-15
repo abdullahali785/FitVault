@@ -1,3 +1,4 @@
+import { mapCategory } from "../category.mapper.js";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -6,7 +7,7 @@ const STOCKX_URL =
     "?display%5Btraits%5D=true&display%5Bvariants%5D=true" + 
     "&display%5Bidentifiers%5D=true&display%5Bprices%5D=true" + 
     "&display%5Bstatistics%5D=true&query=" + 
-    "&filters=brand+%3D+%27Nike%27&sort=rank&page=1&limit=20&market=US&currency=USD";
+    "&filters=brand+%3D+%27Nike%27&sort=rank&page=1&limit=2&market=US&currency=USD";
 
 export type ExtractedProduct = {
     sourceProductId: string;
@@ -15,7 +16,8 @@ export type ExtractedProduct = {
     name: string;
     model: string | null;
     sku: string;
-    category: string | null;
+    category: "SHOES" | "APPAREL" | "OTHER";
+    rawCategory: string | null;
     gender: string | null;
     description: string | null;
 
@@ -46,6 +48,7 @@ export async function fetchStockXProducts() {
     const products: ExtractedProduct[] = [];
 
     for (const raw of json.data) {
+        console.log(raw);
         const extracted = extractProduct(raw);
         if (extracted) products.push(extracted);
     }
@@ -56,17 +59,29 @@ export async function fetchStockXProducts() {
 function extractProduct(raw: any): ExtractedProduct | null {
     if (!raw?.id || !raw?.name || !raw?.brand) return null;
 
-    const price = avgPrice(raw.variants);
+    const price = raw.avg_price;
     const availability = price ? "IN_STOCK" : "OUT_OF_STOCK";
+
+    const primaryCategory =
+        raw.breadcrumbs?.[1]?.value ??
+        raw.category ??
+        raw.product_type ??
+        null;
+
+    const extraSignals = [
+        ...(raw.categories ?? []),
+        raw.secondary_category,
+    ];
 
     return {
         sourceProductId: String(raw.id),
 
         brandName: normStr(raw.brand)!,
-        name: normStr(raw.name)!,
+        name: normStr(raw.title)!,
         model: normStr(raw.model),
         sku: normStr(raw.sku) ?? `StockX-${raw.id}`,
-        category: normStr(raw.category),
+        category: mapCategory(primaryCategory, extraSignals),
+        rawCategory: normStr(raw.category),
         gender: normStr(raw.gender),
         description: normStr(raw.description),
 
@@ -81,15 +96,4 @@ function extractProduct(raw: any): ExtractedProduct | null {
 // Helper Functions
 function normStr(value?: string | null): string | null {
     return value?.trim() || null;
-}
-
-function avgPrice(variants: any[]): number | null {
-    if (!Array.isArray(variants)) return null;
-
-    const prices = variants
-        .filter(v => v.available === true && v.lowest_ask > 0)
-        .map(v => v.lowest_ask);
-
-    if (!prices.length) return null;
-    return Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
 }

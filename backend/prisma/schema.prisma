@@ -27,7 +27,8 @@ model Product {
   name        String
   model       String?
   sku         String   @unique
-  category    String?
+  category    ProductCategory?
+  rawCategory String? 
   gender      String?
   description String?
   msrp Float?
@@ -88,4 +89,10 @@ enum DataSource {
   API
   SCRAPE
   CACHE
+}
+
+enum ProductCategory {
+  SHOES
+  APPAREL
+  OTHER
 }
