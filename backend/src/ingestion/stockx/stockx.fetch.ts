@@ -1,4 +1,4 @@
-import { mapCategory } from "../category.mapper.js";
+import { mapCategory } from "../category.mapper.ts";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -7,7 +7,7 @@ const STOCKX_URL =
     "?display%5Btraits%5D=true&display%5Bvariants%5D=true" + 
     "&display%5Bidentifiers%5D=true&display%5Bprices%5D=true" + 
     "&display%5Bstatistics%5D=true&query=" + 
-    "&filters=brand+%3D+%27Nike%27&sort=rank&page=1&limit=2&market=US&currency=USD";
+    "&filters=brand+%3D+%27Nike%27&sort=rank&page=&limit=&market=US&currency=USD";
 
 export type ExtractedProduct = {
     sourceProductId: string;
@@ -48,7 +48,7 @@ export async function fetchStockXProducts() {
     const products: ExtractedProduct[] = [];
 
     for (const raw of json.data) {
-        console.log(raw);
+        // console.log(raw);
         const extracted = extractProduct(raw);
         if (extracted) products.push(extracted);
     }

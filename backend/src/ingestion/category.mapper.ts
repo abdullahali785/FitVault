@@ -15,6 +15,8 @@ export function mapCategory(input?: string | null, extraSignals?: string[] | nul
         haystack.includes("sandal") ||
         haystack.includes("boot") ||
         haystack.includes("cleat") ||
+        haystack.includes("dunk") ||
+        haystack.includes("jordan") ||
         haystack.includes("footwear")
     ) {
         return "SHOES";

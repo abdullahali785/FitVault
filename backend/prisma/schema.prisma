@@ -32,7 +32,6 @@ model Product {
   gender      String?
   description String?
   msrp Float?
-  currency String?
 
   offers      Offer[]
 
