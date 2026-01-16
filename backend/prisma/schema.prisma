@@ -31,7 +31,7 @@ model Product {
   rawCategory String? 
   gender      String?
   description String?
-  msrp Float?
+  imageUrl    String?
 
   offers      Offer[]
 

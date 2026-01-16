@@ -23,6 +23,7 @@ export type ExtractedProduct = {
     description: string | null;
 
     productUrl: string;
+    imageUrl: string;
 
     price: number | null;
     currency: "USD" | null;
@@ -75,6 +76,7 @@ function extractProduct(raw: any): ExtractedProduct | null {
         description: normStr(raw.description),
 
         productUrl: raw.link,
+        imageUrl: raw.image_url,
 
         price,
         currency: price ? "USD" : null,

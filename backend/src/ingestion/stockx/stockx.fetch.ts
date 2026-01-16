@@ -7,7 +7,8 @@ const STOCKX_URL =
     "?display%5Btraits%5D=true&display%5Bvariants%5D=true" + 
     "&display%5Bidentifiers%5D=true&display%5Bprices%5D=true" + 
     "&display%5Bstatistics%5D=true&query=" + 
-    "&filters=brand+%3D+%27Nike%27&sort=rank&page=&limit=&market=US&currency=USD";
+    // "&filters=brand+%3D+%27Nike%27&sort=rank&page=&limit=&market=US&currency=USD";
+    "&filters=brand+%3D+%27Nike%27&sort=rank&market=US&currency=USD";
 
 export type ExtractedProduct = {
     sourceProductId: string;
@@ -22,6 +23,7 @@ export type ExtractedProduct = {
     description: string | null;
 
     productUrl: string;
+    imageUrl: string;
 
     price: number | null;
     currency: "USD" | null;
@@ -52,7 +54,7 @@ export async function fetchStockXProducts() {
     for (const raw of json.data) {
         // console.log(raw);
         const extracted = extractProduct(raw);
-        
+
         // console.log(extracted);
         if (extracted) products.push(extracted);
     }
@@ -90,6 +92,7 @@ function extractProduct(raw: any): ExtractedProduct | null {
         description: normStr(raw.description),
 
         productUrl: raw.link,
+        imageUrl: raw.gallery[0],
 
         price,
         currency: price ? "USD" : null,

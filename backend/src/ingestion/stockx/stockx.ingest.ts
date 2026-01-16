@@ -29,6 +29,7 @@ async function ingestSingleProduct(product: ExtractedProduct) {
                 gender: product.gender,
                 description: product.description,
                 updatedAt: new Date(),
+                imageUrl: product.imageUrl,
             },
             create: {
                 brandId: brand.id,
@@ -39,14 +40,15 @@ async function ingestSingleProduct(product: ExtractedProduct) {
                 rawCategory: product.rawCategory,
                 gender: product.gender,
                 description: product.description,
+                imageUrl: product.imageUrl,
             },
         });
 
         await tx.offer.upsert({
             where: {
                 productId_retailer: {
-                productId: dbProduct.id,
-                retailer: Retailer.STOCKX,
+                    productId: dbProduct.id,
+                    retailer: Retailer.STOCKX,
                 },
             },
             update: {
@@ -54,6 +56,7 @@ async function ingestSingleProduct(product: ExtractedProduct) {
                 currency: product.currency,
                 availability: mapAvailability(product.availability),
                 priceSource: DataSource.API,
+                imageSource: DataSource.API,
                 lastPriceUpdate: new Date(),
             },
             create: {
@@ -65,6 +68,7 @@ async function ingestSingleProduct(product: ExtractedProduct) {
                 currency: product.currency,
                 availability: mapAvailability(product.availability),
                 priceSource: DataSource.API,
+                imageSource: DataSource.API,
                 sourceProductId: product.sourceProductId,
                 lastPriceUpdate: new Date(),
             },
