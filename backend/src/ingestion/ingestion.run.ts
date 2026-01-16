@@ -8,9 +8,9 @@ import { ingestStockXProducts } from "./stockx/stockx.ingest.ts";
 const prisma = new PrismaClient();
 
 async function run() {
-    const goatProducts = await fetchGoatProducts();
+    // const goatProducts = await fetchGoatProducts();
     // console.log(goatProducts);
-    await ingestGoatProducts(goatProducts);
+    // await ingestGoatProducts(goatProducts);
 
     const stockxProducts = await fetchStockXProducts();
     // console.log(stockxProducts);

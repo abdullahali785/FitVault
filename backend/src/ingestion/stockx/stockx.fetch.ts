@@ -31,7 +31,8 @@ export type ExtractedProduct = {
 export async function fetchStockXProducts() {
     const response = await fetch(STOCKX_URL, {
         headers: {
-            Authorization: `Bearer ${process.env.GOAT_API_KEY}`
+            Accept: '*/*',
+            Authorization: `${process.env.GOAT_API_KEY}`
         }
     })
 
@@ -40,6 +41,7 @@ export async function fetchStockXProducts() {
     }
 
     const json = await response.json();
+    // console.log(json);
 
     if (!Array.isArray(json?.data)) {
         throw new Error("Invalid StockX response shape");
@@ -50,6 +52,8 @@ export async function fetchStockXProducts() {
     for (const raw of json.data) {
         // console.log(raw);
         const extracted = extractProduct(raw);
+        
+        // console.log(extracted);
         if (extracted) products.push(extracted);
     }
 
@@ -57,7 +61,7 @@ export async function fetchStockXProducts() {
 }
 
 function extractProduct(raw: any): ExtractedProduct | null {
-    if (!raw?.id || !raw?.name || !raw?.brand) return null;
+    if (!raw?.id || !raw?.title || !raw?.brand) return null;
 
     const price = raw.avg_price;
     const availability = price ? "IN_STOCK" : "OUT_OF_STOCK";
