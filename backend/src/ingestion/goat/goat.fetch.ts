@@ -51,7 +51,9 @@ export async function fetchGoatProducts() {
 
     for (const raw of json.data) {
         const extracted = extractProduct(raw);
-        if (extracted) products.push(extracted);
+        if (extracted) {
+            products.push(extracted);
+        }
     }
 
     return products;

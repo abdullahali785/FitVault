@@ -56,7 +56,9 @@ export async function fetchStockXProducts() {
         const extracted = extractProduct(raw);
 
         // console.log(extracted);
-        if (extracted) products.push(extracted);
+        if (extracted) {
+            products.push(extracted);
+        }
     }
 
     return products;
