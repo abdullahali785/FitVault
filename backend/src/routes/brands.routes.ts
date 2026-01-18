@@ -6,16 +6,16 @@ const router = Router();
 
 router.get('/', async (req, res) => {
     try {
-        const data = await fetchProducts(req.query);
-        res.json(data);
+        const brands = await getBrands();
+        res.json(brands);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-async function fetchProducts(query: any) {
-    
+async function getBrands() {
+    // Query brands table in db
 }
 
 export default router;

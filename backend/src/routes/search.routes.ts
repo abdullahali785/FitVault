@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 async function fetchProducts(query: any) {
-    
+    // Takes user input and returns relevant products (sorted by relevance)
 }
 
 export default router;
