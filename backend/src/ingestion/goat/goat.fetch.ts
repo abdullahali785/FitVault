@@ -6,7 +6,7 @@ const GOAT_URL =
     "https://api.kicks.dev/v3/goat/products" +
     // "?query=&slugs=&sku=&page=&limit=" +
     "?query=&slugs=&sku=" +
-    "&filters=brand+%3D+%27Nike%27" +
+    "&filters=brand+%3D+%27Adidas%27" +
     "&display%5Bvariants%5D=true" +
     "&sort=rank%3Aasc&market=US";
 
