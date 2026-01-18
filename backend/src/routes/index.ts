@@ -1,17 +1,15 @@
-import { log } from 'console';
-import express, { Router, Request, Response } from 'express';
-import path from 'path';
+import { Router } from 'express'
 
-const router = Router();
-router.use(express.static(path.resolve('web/build')));
+import productsRoutes from './products.routes.ts'
+import offersRoutes from './offers.routes.ts'
+import brandsRoutes from './brands.routes.ts'
+import searchRoutes from './search.routes.ts'
 
-router.get('/', (req, res) => {
-    try {
-        res.sendFile(path.resolve('../web/public', 'index.html'));
-        log("Done");
-    } catch (e) {
-        log(e);
-    }
-});
+const router = Router()
 
-export default router;
+router.use('/products', productsRoutes)
+router.use('/offers', offersRoutes)
+router.use('/brands', brandsRoutes)
+router.use('/search', searchRoutes)
+
+export default router
