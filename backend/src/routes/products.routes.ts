@@ -26,7 +26,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Returns multiple products from product table 
+// Returns multiple products from Product table 
 async function fetchProducts(query: any) {
     const {
         brand,
@@ -104,7 +104,7 @@ async function fetchProducts(query: any) {
     });
 }
 
-// Return a single product from product table (based on id)
+// Return a single product from Product table (based on id)
 async function fetchProduct(id: any) {
     const product = await prisma.product.findUnique({
         where: { id },
