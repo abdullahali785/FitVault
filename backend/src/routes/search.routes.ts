@@ -4,18 +4,22 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const router = Router();
 
+const SEARCH_LIMIT = 10;
+const MAX_PRICE_AGE = 1000 * 60 * 60 * 24;  // 24 Hours
+
 router.get('/', async (req, res) => {
     try {
-        const data = await fetchProducts(req.query);
-        res.json(data);
+        const results = await searchDb(req.query);
+        res.json(results);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-async function fetchProducts(query: any) {
-    // Takes user input and returns relevant products (sorted by relevance)
+// Takes user input and returns relevant products (sorted by relevance)
+async function searchDb(query: any) {
+    
 }
 
 export default router;

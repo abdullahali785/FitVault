@@ -8,8 +8,8 @@ const MAX_PRICE_AGE = 1000 * 60 * 60 * 24; // 24 Hours
 
 router.get('/', async (req, res) => {
     try {
-        const data = await fetchProducts(req.query);
-        res.json(data);
+        const products = await fetchProducts(req.query);
+        res.json(products);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
