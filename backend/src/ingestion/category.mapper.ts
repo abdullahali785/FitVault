@@ -1,40 +1,69 @@
 export type CanonicalCategory = "SHOES" | "APPAREL" | "OTHER";
 
 export function mapCategory(input?: string | null, extraSignals?: string[] | null): CanonicalCategory {
-    const values = [];
+    const haystack = [ input ?? "", ...(extraSignals ?? [])]
+        .join(" ")
+        .toLowerCase();
 
-    if (input) values.push(input);
-    if (extraSignals?.length) values.push(...extraSignals);
-
-    const haystack = values.join(" ").toLowerCase();
-
-    if (
-        haystack.includes("shoe") ||
-        haystack.includes("sneaker") ||
-        haystack.includes("slide") ||
-        haystack.includes("sandal") ||
-        haystack.includes("boot") ||
-        haystack.includes("cleat") ||
-        haystack.includes("dunk") ||
-        haystack.includes("jordan") ||
-        haystack.includes("footwear")
-    ) {
+    if (SHOE_KEYWORDS.some(k => haystack.includes(k))) {
         return "SHOES";
     }
 
-    if (
-        haystack.includes("apparel") ||
-        haystack.includes("clothing") ||
-        haystack.includes("shirt") ||
-        haystack.includes("hoodie") ||
-        haystack.includes("jacket") ||
-        haystack.includes("pant") ||
-        haystack.includes("short") ||
-        haystack.includes("tee") ||
-        haystack.includes("sweater")
-    ) {
+    if (APPAREL_KEYWORDS.some(k => haystack.includes(k))) {
         return "APPAREL";
     }
 
     return "OTHER";
 }
+
+const SHOE_KEYWORDS = [
+  "shoe",
+  "sneaker",
+  "trainer",
+  "running",
+  "basketball",
+  "tennis",
+  "soccer",
+  "football",
+  "cleat",
+  "boot",
+  "court",
+  "track",
+  "slide",
+  "footwear",
+  "air max",
+  "air force",
+  "jordan",
+  "dunk",
+  "yeezy",
+  "ultraboost",
+  "new balance",
+  "asics",
+  "hoka",
+  "brooks",
+  "saucony",
+  "on running",
+];
+
+const APPAREL_KEYWORDS = [
+  "apparel",
+  "clothing",
+  "sportswear",
+  "activewear",
+  "training",
+  "shirt",
+  "tee",
+  "tank",
+  "hoodie",
+  "sweatshirt",
+  "jacket",
+  "short",
+  "pant",
+  "legging",
+  "jogger",
+  "tracksuit",
+  "compression",
+  "base layer",
+  "sports bra",
+  "sock",
+];
