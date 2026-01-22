@@ -16,6 +16,16 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/slug/:slug', async (req, res) => {
+    try {
+        const data = await fetchProductBySlug(req.params.slug); 
+        res.json(data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.get('/:id', async (req, res) => {
     try {
         const data = await fetchProduct(req.params.id); 
@@ -26,6 +36,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+
 // Returns multiple products from Product table 
 async function fetchProducts(query: any) {
     const {
@@ -33,12 +44,11 @@ async function fetchProducts(query: any) {
         minPrice,
         maxPrice,
         sort,
-        limit = 20,
-        offset = 0,
     } = query;
 
-    const take = Number(limit ?? 20);
-    const skip = Number(offset ?? 0);
+    const page = Number(query.page ?? 1);
+    const take = Number(query.limit ?? 24);
+    const skip = (page - 1) * take;
 
     const orderBy =
         sort === "date" ? { createdAt: "desc" as const } : 
@@ -83,25 +93,45 @@ async function fetchProducts(query: any) {
     const data = await prisma.product.findMany({
         where,
         include,
+        orderBy,
         take,
         skip,
     });
 
-    return data.map(p => {
+    let results: any[] = [];
+
+    data.map(p => {
         const prices = p.offers
             .map(o => o.price)
             .filter((p): p is number => p !== null);
             
-        return {
+        const productInfo = {
             id: p.id,
-            brand: p.brand,
+            brand: {
+                id: p.brand.id,
+                name: p.brand.name,
+            },
             model: p.model,
             imageUrl: p.imageUrl,
             lowestPrice: prices.length ? Math.min(...prices) : null,
             currency: p.offers[0]?.currency ?? 'USD',
             offerCount: prices.length,
         };
+
+        results.push(productInfo);
     });
+
+    const total = await prisma.product.count({ where });
+
+    return {
+        "data": results,
+        "meta": {
+            "page": 1,
+            "limit": take,
+            "total": total,
+            "totalPages": total / take + 1
+        }
+    }
 }
 
 // Return a single product from Product table (based on id)
@@ -123,13 +153,38 @@ async function fetchProduct(id: any) {
 
     const now = Date.now();
 
-    return {
-        ...product,
-        offers: product.offers.map(o => ({
-            ...o,
-            isStale: !o.lastScrapedAt || now - o.lastScrapedAt.getTime() > MAX_PRICE_AGE,
-        })),
+    const prices = product.offers
+        .map(o => o.price)
+        .filter((p): p is number => p !== null);
+        
+    const productInfo = {
+        id: product.id,
+        brand: {
+            id: product.brand.id,
+            name: product.brand.name,
+        },
+        model: product.model,
+        imageUrl: product.imageUrl,
+        lowestPrice: prices.length ? Math.min(...prices) : null,
+        currency: product.offers[0]?.currency ?? 'USD',
+        offerCount: prices.length,
     };
+
+    return { "data": productInfo }
+}
+
+async function fetchProductBySlug(slug: any) { 
+    
+}
+
+function slugify(brand: string, name: string) {
+    let text = `${brand}-${name}`;
+
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 }
 
 export default router;

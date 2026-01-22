@@ -26,6 +26,7 @@ model Product {
 
   name        String
   model       String?
+  slug        String   @unique
   sku         String   @unique
   category    ProductCategory?
   rawCategory String? 
