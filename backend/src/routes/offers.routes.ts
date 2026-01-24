@@ -24,8 +24,8 @@ async function fetchOffers(query: any) {
         maxPrice,
         availability,
         sort,
-        limit = 20,
-        offset = 0,
+        limit,
+        offset,
     } = query;
 
     const take = Number(limit ?? 20);

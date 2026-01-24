@@ -7,7 +7,7 @@ export default async function SlugProductPage({ params } : any) {
     ).then(res => res.json());
 
     return (
-        <div>
+        <div key={product.id}>
             <h1>{product.name}</h1>
             <img src={product.imageUrl}></img>
         </div>
