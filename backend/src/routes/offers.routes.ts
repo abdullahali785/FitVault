@@ -58,6 +58,7 @@ async function fetchOffers(query: any) {
             select: {
                 id: true,
                 name: true,
+                slug: true,
                 model: true,
                 sku: true,
                 imageUrl: true,
@@ -89,6 +90,7 @@ async function fetchOffers(query: any) {
         product: {
             id: o.product.id,
             name: o.product.name,
+            slug: o.product.slug,
             model: o.product.model,
             sku: o.product.sku,
             imageUrl: o.product.imageUrl,
