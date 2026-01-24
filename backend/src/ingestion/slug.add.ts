@@ -16,7 +16,7 @@ async function main() {
 
     for (const p of products) {
         if (!p.slug) {
-            let baseSlug = slugify(`${p.brand.name} ${p.name ?? "product"}`);
+            let baseSlug = slugify(`${p.brand.name}-${p.name ?? "product"}`);
             let slug = baseSlug;
             let i = 1;
 

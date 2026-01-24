@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const router = Router();
-
 const MAX_PRICE_AGE = 1000 * 60 * 60 * 24; // 24 Hours
 
 router.get('/', async (req, res) => {
@@ -18,7 +17,7 @@ router.get('/', async (req, res) => {
 
 router.get('/slug/:slug', async (req, res) => {
     try {
-        const data = await fetchProductBySlug(req.params.slug); 
+        const data = await fetchProduct({ slug: req.params.slug }); 
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -28,7 +27,7 @@ router.get('/slug/:slug', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        const data = await fetchProduct(req.params.id); 
+        const data = await fetchProduct({ id: req.params.id }); 
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -134,10 +133,17 @@ async function fetchProducts(query: any) {
     }
 }
 
-// Return a single product from Product table (based on id)
-async function fetchProduct(id: any) {
+// Returns a single product from Product table based on slug or id
+async function fetchProduct({ id, slug }: FetchProductArgs) { 
+    if (!id && !slug) {
+        throw new Error("Either id or slug must be provided");
+    }
+
+    let where: any = { slug };
+    if (id) where = { id };
+
     const product = await prisma.product.findUnique({
-        where: { id },
+        where,
         include: {
             brand: true,
             offers: {
@@ -145,7 +151,7 @@ async function fetchProduct(id: any) {
                 orderBy: { price: 'asc' },
             },
         },
-    });
+        });
 
     if (!product) {
         throw new Error('Product not found');
@@ -173,18 +179,9 @@ async function fetchProduct(id: any) {
     return { "data": productInfo }
 }
 
-async function fetchProductBySlug(slug: any) { 
-    
-}
-
-function slugify(brand: string, name: string) {
-    let text = `${brand}-${name}`;
-
-    return text
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-}
+type FetchProductArgs = {
+    id?: string;
+    slug?: string;
+};
 
 export default router;
