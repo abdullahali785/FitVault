@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/slug/:slug', async (req, res) => {
+router.get('/:slug', async (req, res) => {
     try {
         const data = await fetchProduct({ slug: req.params.slug }); 
         res.json(data);
@@ -46,7 +46,7 @@ async function fetchProducts(query: any) {
     } = query;
 
     const page = Number(query.page ?? 1);
-    const take = Number(query.limit ?? 24);
+    const take = Number(query.limit ?? 20);
     const skip = (page - 1) * take;
 
     const orderBy =
