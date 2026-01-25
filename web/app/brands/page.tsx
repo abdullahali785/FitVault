@@ -1,4 +1,4 @@
-export default async function ProductsPage() {
+export default async function BrandssPage() {
     const brands = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/brands`,
         { cache: "no-store" }

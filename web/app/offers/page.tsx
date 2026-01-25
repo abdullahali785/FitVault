@@ -1,6 +1,6 @@
-export default async function ProductsPage() {
+export default async function OffersPage() {
     const offers = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/offers`,
+        `${process.env.NEXT_PUBLIC_API_URL}/offers?availability=IN_STOCK?sort=price`,
         { cache: "no-store" }
     ).then(res => res.json());
 
