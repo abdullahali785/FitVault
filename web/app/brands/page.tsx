@@ -1,4 +1,6 @@
-export default async function BrandssPage() {
+import Link from "next/link";
+
+export default async function BrandsPage() {
     const brands = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/brands`,
         { cache: "no-store" }
@@ -6,10 +8,13 @@ export default async function BrandssPage() {
 
     return (
     <div>
+        <h1>Brands</h1>
         {brands.map((brand: any) => (
-            <div key={brand.id}>
-                <h1>{brand.name}</h1>
-            </div>
+            <Link href={{pathname: "/products", query: { brand: brand.name }}}>
+                <div key={brand.id}>
+                    <h1>{brand.name}</h1>
+                </div>
+            </Link>
         ))}
     </div>
     );

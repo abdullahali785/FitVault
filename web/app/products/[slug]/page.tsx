@@ -8,7 +8,7 @@ export default async function SlugProductPage({ params } : any) {
 
     return (
         <div key={product.id}>
-            <h1>{product.name}</h1>
+            <h1>{product.model}</h1>
             <img src={product.imageUrl}></img>
         </div>
     );

@@ -23,7 +23,7 @@ export default function LandingPage() {
     useEffect(() => {
         async function fetchLatestOffers() {
             try {
-                const res = await fetch(BASE_URL + "/api/v1/offers?sort=date");
+                const res = await fetch(BASE_URL + "/api/v1/offers?availability=IN_STOCK&sort=date");
                 const data = await res.json();
                 setOffers(data);
             } catch (err) {

@@ -6,6 +6,7 @@ export default async function ProductsPage(query : any) {
 
     return (
     <div>
+        <h1>Products</h1>
         {products.map((product: any) => (
             <div key={product.id}>
                 <h1>{product.name}</h1>
