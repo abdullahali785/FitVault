@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
         res.json(products);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'GET /products failed' });
     }
 });
 
@@ -21,7 +21,7 @@ router.get('/:slug', async (req, res) => {
         res.json(data);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'GET /products/:slug failed' });
     }
 });
 
@@ -31,7 +31,7 @@ router.get('/:id', async (req, res) => {
         res.json(data);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'GET /products/:id failed' });
     }
 });
 
@@ -39,6 +39,7 @@ router.get('/:id', async (req, res) => {
 // Returns multiple products from Product table 
 async function fetchProducts(query: any) {
     const {
+        category,
         brand,
         minPrice,
         maxPrice,
@@ -50,10 +51,11 @@ async function fetchProducts(query: any) {
     const skip = (page - 1) * take;
 
     const orderBy =
-        sort === "date" ? { createdAt: "desc" as const } : 
-        { rating: "desc" as const };
+        sort === "date" ? { updatedAt: "desc" as const } : { createdAt: "desc" as const };
 
     const where = {
+        ...(category && { category: { category: category } }),
+
         ...(brand && { brand: { name: brand } }),
 
         ...(minPrice || maxPrice ? {

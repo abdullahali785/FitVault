@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 const router = Router();
 router.get('/', async (req, res) => {
     try {
-        console.log("Request Recieved");
         const brands = await getBrands();
         res.status(200).json(brands);
         return;

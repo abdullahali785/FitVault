@@ -24,7 +24,7 @@ export default function RootLayout({children} : {children: React.ReactNode}) {
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center gap-6 text-sm">
                         <Link href="/brands" className="hover:underline">Brands</Link>
-                        <Link href="/products" className="hover:underline">Products</Link>
+                        {/* <Link href="/products" className="hover:underline">Products</Link> */}
                         <Link href="/offers" className="hover:underline">Offers</Link>
                     </nav>
                 </div>
