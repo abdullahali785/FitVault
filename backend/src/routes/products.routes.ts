@@ -40,10 +40,10 @@ router.get('/:id', async (req, res) => {
 async function fetchProducts(query: any) {
     const {
         category,
+        sort,
         brand,
         minPrice,
         maxPrice,
-        sort,
     } = query;
 
     const page = Number(query.page ?? 1);
@@ -51,10 +51,11 @@ async function fetchProducts(query: any) {
     const skip = (page - 1) * take;
 
     const orderBy =
-        sort === "date" ? { updatedAt: "desc" as const } : { createdAt: "desc" as const };
+        sort === "date" ? { createdAt: "desc" as const } : { updatedAt: "desc" as const };
 
     const where = {
-        ...(category && { category: { category: category } }),
+        ...(category && { category: { category: category } }), 
+        // This line has some issue
 
         ...(brand && { brand: { name: brand } }),
 

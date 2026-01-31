@@ -35,11 +35,11 @@ router.get('/:id', async (req, res) => {
 });
 // Returns multiple products from Product table 
 async function fetchProducts(query) {
-    const { category, brand, minPrice, maxPrice, sort, } = query;
+    const { category, sort, brand, minPrice, maxPrice, } = query;
     const page = Number(query.page ?? 1);
     const take = Number(query.limit ?? 20);
     const skip = (page - 1) * take;
-    const orderBy = sort === "date" ? { updatedAt: "desc" } : { createdAt: "desc" };
+    const orderBy = sort === "date" ? { createdAt: "desc" } : { updatedAt: "desc" };
     const where = {
         ...(category && { category: { category: category } }),
         ...(brand && { brand: { name: brand } }),
