@@ -1,9 +1,11 @@
 import Link from "next/link";
-const API_BASE = "http://localhost:5000/api/v1/";
+const API_BASE = "http://localhost:4000/api/v1";
 
 export default async function BrandsPage() {
-    const brands = await fetch(`${API_BASE}/brands`, { cache: "no-store" })
-        .then(res => res.json());
+    const res = await fetch(`${API_BASE}/brands`, { cache: "no-store" });
+    if (!res.ok) {throw new Error("Failed to load brands")};
+
+    const brands = await res.json();
 
     return (
     <div>
@@ -11,7 +13,7 @@ export default async function BrandsPage() {
         {brands.map((brand: any) => (
             <Link href={{pathname: "/products", query: { brand: brand.name }}}>
                 <div key={brand.id}>
-                    <h1>{brand.name}</h1>
+                    <p>{brand.name}</p>
                 </div>
             </Link>
         ))}

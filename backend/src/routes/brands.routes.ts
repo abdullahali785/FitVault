@@ -7,26 +7,19 @@ const router = Router();
 router.get('/', async (req, res) => {
     try {
         const brands = await getBrands();
-        res.json(brands);
+        res.status(200).json(brands);
+        return;
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error("GET /brands failed", error);
+        res.status(500).json({error: 'GET /brands failed'});
     }
 });
 
 // Returns all brands from Brand table 
 async function getBrands() {
-    const brands = await prisma.brand.findMany({
-        orderBy: {
-            name: 'asc',
-        }
+    return await prisma.brand.findMany({
+        orderBy: {name: 'asc'}
     });
-
-    if (!brands) {
-        throw new Error('No Brands found');
-    }
-
-    return brands;
 }
 
 export default router;
