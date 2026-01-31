@@ -1,5 +1,5 @@
 import { PrismaClient, Retailer, Availability, DataSource } from "@prisma/client";
-import type { ExtractedProduct } from "./goat.fetch.ts";
+import type { ExtractedProduct } from "./goat.fetch.js";
 
 const prisma = new PrismaClient();
 
