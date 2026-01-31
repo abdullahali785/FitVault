@@ -11,7 +11,6 @@ function slugify(text: string) {
 
 async function main() {
     const products = await prisma.product.findMany({ include: { brand: true } });
-
     const usedSlugs = new Set<string>();
 
     for (const p of products) {

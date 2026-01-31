@@ -18,6 +18,7 @@ async function ingestSingleProduct(product) {
             update: {
                 name: product.name,
                 model: product.model,
+                slug: slugify(`${brand.name}-${product.name ?? "product"}`),
                 category: product.category,
                 rawCategory: product.rawCategory,
                 gender: product.gender,
@@ -29,6 +30,7 @@ async function ingestSingleProduct(product) {
                 brandId: brand.id,
                 name: product.name,
                 model: product.model,
+                slug: slugify(`${brand.name}-${product.name ?? "product"}`),
                 sku: product.sku,
                 category: product.category,
                 rawCategory: product.rawCategory,
@@ -77,5 +79,12 @@ function mapAvailability(value) {
         default:
             return Availability.UNKNOWN;
     }
+}
+function slugify(text) {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 }
 //# sourceMappingURL=stockx.ingest.js.map

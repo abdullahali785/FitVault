@@ -1,9 +1,9 @@
 import { Router } from 'express'
 
-import productsRoutes from './products.routes.ts'
-import offersRoutes from './offers.routes.ts'
-import brandsRoutes from './brands.routes.ts'
-import searchRoutes from './search.routes.ts'
+import productsRoutes from './products.routes.js'
+import offersRoutes from './offers.routes.js'
+import brandsRoutes from './brands.routes.js'
+import searchRoutes from './search.routes.js'
 
 const router = Router()
 

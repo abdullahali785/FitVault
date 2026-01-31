@@ -24,6 +24,7 @@ async function ingestSingleProduct(product: ExtractedProduct) {
             update: {
                 name: product.name,
                 model: product.model,
+                slug: slugify(`${brand.name}-${product.name ?? "product"}`),
                 category: product.category,
                 rawCategory: product.rawCategory,
                 gender: product.gender,
@@ -35,6 +36,7 @@ async function ingestSingleProduct(product: ExtractedProduct) {
                 brandId: brand.id,
                 name: product.name,
                 model: product.model,
+                slug: slugify(`${brand.name}-${product.name ?? "product"}`),
                 sku: product.sku,
                 category: product.category,
                 rawCategory: product.rawCategory,
@@ -86,4 +88,12 @@ function mapAvailability(value: ExtractedProduct["availability"]): Availability 
         default:
             return Availability.UNKNOWN;
     }
+}
+
+function slugify(text: string) {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
 }
