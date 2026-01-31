@@ -1,39 +1,32 @@
 import { Router } from 'express';
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 const router = Router();
-
 const SEARCH_LIMIT = 10;
-const MAX_PRICE_AGE = 1000 * 60 * 60 * 24;  // 24 Hours
-
+const MAX_PRICE_AGE = 1000 * 60 * 60 * 24; // 24 Hours
 router.get('/', async (req, res) => {
     try {
         const results = await searchDb(req.query);
         res.json(results);
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 // Takes user input and returns relevant products (sorted by relevance)
-async function searchDb(request: any) {
+async function searchDb(request) {
     const query = request.query?.trim();
-
     if (!query || query.length < 2) {
         return { query: query ?? "", results: [] };
     }
-
     const normalized = query.toLowerCase();
-
     const brands = await prisma.brand.findMany({
         where: {
             name: { contains: normalized, mode: "insensitive" },
         },
         take: 3,
     });
-
     const products = await prisma.product.findMany({
         where: {
             name: { contains: normalized, mode: "insensitive" },
@@ -57,7 +50,6 @@ async function searchDb(request: any) {
         },
         take: 20,
     });
-    
     // Normalize Brands
     const brandResults = brands.map(b => ({
         type: "brand",
@@ -66,13 +58,11 @@ async function searchDb(request: any) {
         subtitle: "Brand",
         _rankHint: exactMatchScore(b.name, normalized),
     }));
-
     // Normalize Products
     const productResults = products.map(p => {
         const prices = p.offers
             .map(o => o.price)
-            .filter((p): p is number => p !== null);
-
+            .filter((p) => p !== null);
         return {
             type: "product",
             id: p.id,
@@ -83,7 +73,6 @@ async function searchDb(request: any) {
             _rankHint: exactMatchScore(p.name, normalized),
         };
     });
-
     const results = [...productResults, ...brandResults].sort((a, b) => {
         if (a._rankHint !== b._rankHint) {
             return b._rankHint - a._rankHint;
@@ -92,23 +81,21 @@ async function searchDb(request: any) {
             return a.type === "product" ? -1 : 1;
         }
         return 0;
-
     }).slice(0, SEARCH_LIMIT).map(({ _rankHint, ...rest }) => rest);
-
     return {
         query: query,
         results,
     };
 }
-
-function exactMatchScore(text: string, query: string) {
+function exactMatchScore(text, query) {
     const t = text.toLowerCase();
-
-    if (t === query) return 3;
-    if (t.startsWith(query)) return 2;
-    if (t.includes(query)) return 1;
-
+    if (t === query)
+        return 3;
+    if (t.startsWith(query))
+        return 2;
+    if (t.includes(query))
+        return 1;
     return 0;
 }
-
 export default router;
+//# sourceMappingURL=search.routes.js.map

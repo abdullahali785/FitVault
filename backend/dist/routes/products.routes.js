@@ -1,61 +1,48 @@
 import { Router } from 'express';
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 const router = Router();
 const MAX_PRICE_AGE = 1000 * 60 * 60 * 24; // 24 Hours
-
 router.get('/', async (req, res) => {
     try {
         const products = await fetchProducts(req.query);
         res.json(products);
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 router.get('/:slug', async (req, res) => {
     try {
-        const data = await fetchProduct({ slug: req.params.slug }); 
+        const data = await fetchProduct({ slug: req.params.slug });
         res.json(data);
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 router.get('/:id', async (req, res) => {
     try {
-        const data = await fetchProduct({ id: req.params.id }); 
+        const data = await fetchProduct({ id: req.params.id });
         res.json(data);
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-
 // Returns multiple products from Product table 
-async function fetchProducts(query: any) {
-    const {
-        brand,
-        minPrice,
-        maxPrice,
-        sort,
-    } = query;
-
+async function fetchProducts(query) {
+    const { brand, minPrice, maxPrice, sort, } = query;
     const page = Number(query.page ?? 1);
     const take = Number(query.limit ?? 20);
     const skip = (page - 1) * take;
-
-    const orderBy =
-        sort === "date" ? { createdAt: "desc" as const } : 
-        { rating: "desc" as const };
-
+    const orderBy = sort === "date" ? { createdAt: "desc" } :
+        { rating: "desc" };
     const where = {
         ...(brand && { brand: { name: brand } }),
-
         ...(minPrice || maxPrice ? {
             offers: {
                 some: {
@@ -70,7 +57,6 @@ async function fetchProducts(query: any) {
             },
         } : {}),
     };
-
     const include = {
         brand: true,
         offers: {
@@ -87,8 +73,7 @@ async function fetchProducts(query: any) {
                 lastScrapedAt: true,
             },
         },
-    }
-
+    };
     const data = await prisma.product.findMany({
         where,
         include,
@@ -96,14 +81,11 @@ async function fetchProducts(query: any) {
         take,
         skip,
     });
-
-    let results: any[] = [];
-
+    let results = [];
     data.map(p => {
         const prices = p.offers
             .map(o => o.price)
-            .filter((p): p is number => p !== null);
-            
+            .filter((p) => p !== null);
         const productInfo = {
             id: p.id,
             brand: {
@@ -117,12 +99,9 @@ async function fetchProducts(query: any) {
             currency: p.offers[0]?.currency ?? 'USD',
             offerCount: prices.length,
         };
-
         results.push(productInfo);
     });
-
     const total = await prisma.product.count({ where });
-
     return {
         "data": results,
         "meta": {
@@ -131,18 +110,16 @@ async function fetchProducts(query: any) {
             "total": total,
             "totalPages": total / take + 1
         }
-    }
+    };
 }
-
 // Returns a single product from Product table based on slug or id
-async function fetchProduct({ id, slug }: FetchProductArgs) { 
+async function fetchProduct({ id, slug }) {
     if (!id && !slug) {
         throw new Error("Either id or slug must be provided");
     }
-
-    let where: any = { slug };
-    if (id) where = { id };
-
+    let where = { slug };
+    if (id)
+        where = { id };
     const product = await prisma.product.findUnique({
         where,
         include: {
@@ -152,18 +129,14 @@ async function fetchProduct({ id, slug }: FetchProductArgs) {
                 orderBy: { price: 'asc' },
             },
         },
-        });
-
+    });
     if (!product) {
         throw new Error('Product not found');
     }
-
     const now = Date.now();
-
     const prices = product.offers
         .map(o => o.price)
-        .filter((p): p is number => p !== null);
-        
+        .filter((p) => p !== null);
     const productInfo = {
         id: product.id,
         brand: {
@@ -177,13 +150,7 @@ async function fetchProduct({ id, slug }: FetchProductArgs) {
         currency: product.offers[0]?.currency ?? 'USD',
         offerCount: prices.length,
     };
-
-    return { "data": productInfo }
+    return { "data": productInfo };
 }
-
-type FetchProductArgs = {
-    id?: string;
-    slug?: string;
-};
-
 export default router;
+//# sourceMappingURL=products.routes.js.map

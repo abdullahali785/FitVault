@@ -1,58 +1,40 @@
 import { Router } from 'express';
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 const router = Router();
-
 const MAX_PRICE_AGE = 1000 * 60 * 60 * 24; // 24 Hours
-
 router.get('/', async (req, res) => {
     try {
         const offers = await fetchOffers(req.query);
         res.json(offers);
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 // Returns all offers from Offer table 
-async function fetchOffers(query: any) {
-    const {
-        retailer,
-        minPrice,
-        maxPrice,
-        availability,
-        sort,
-        limit,
-        offset,
-    } = query;
-
+async function fetchOffers(query) {
+    const { retailer, minPrice, maxPrice, availability, sort, limit, offset, } = query;
     const take = Number(limit ?? 20);
     const skip = Number(offset ?? 0);
-
-    const orderBy =
-        sort === "date" ? { createdAt: "desc" as const } : 
-        sort === "price" ? { price: "asc" as const } : 
-        { lastScrapedAt: "desc" as const };
-
+    const orderBy = sort === "date" ? { createdAt: "desc" } :
+        sort === "price" ? { price: "asc" } :
+            { lastScrapedAt: "desc" };
     const where = {
         ...(retailer && { retailer: retailer.toUpperCase() }),
         ...(availability && { availability }),
-
         ...(minPrice || maxPrice ? {
             price: {
                 ...(minPrice && { gte: Number(minPrice) }),
                 ...(maxPrice && { lte: Number(maxPrice) }),
             },
         } : {}),
-
         price: { not: null },
         lastScrapedAt: {
             gte: new Date(Date.now() - MAX_PRICE_AGE),
         },
     };
-
     const include = {
         product: {
             select: {
@@ -68,7 +50,6 @@ async function fetchOffers(query: any) {
             },
         },
     };
-
     const offers = await prisma.offer.findMany({
         where,
         include,
@@ -76,7 +57,6 @@ async function fetchOffers(query: any) {
         take,
         skip,
     });
-
     return offers.map(o => ({
         id: o.id,
         retailer: o.retailer,
@@ -86,7 +66,6 @@ async function fetchOffers(query: any) {
         productUrl: o.productUrl,
         affiliateUrl: o.affiliateUrl,
         lastScrapedAt: o.lastScrapedAt,
-
         product: {
             id: o.product.id,
             name: o.product.name,
@@ -98,5 +77,5 @@ async function fetchOffers(query: any) {
         },
     }));
 }
-
 export default router;
+//# sourceMappingURL=offers.routes.js.map
