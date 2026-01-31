@@ -1,8 +1,8 @@
+const API_BASE = "http://localhost:5000/api/v1/";
+
 export default async function SearchPage(query : any) {
-    const results = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/search?${query}`,
-        { cache: "no-store" }
-    ).then(res => res.json());
+    const results = await fetch(`${API_BASE}/search?${query}`, { cache: "no-store" })
+        .then(res => res.json());
 
     return (
     <div>

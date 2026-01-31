@@ -1,8 +1,8 @@
+const API_BASE = "http://localhost:5000/api/v1/";
+
 export default async function OffersPage() {
-    const offers = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/offers?availability=IN_STOCK&sort=date`,
-        { cache: "no-store" }
-    ).then(res => res.json());
+    const offers = await fetch(`${API_BASE}offers?availability=IN_STOCK&sort=date`, { cache: "no-store" })
+        .then(res => res.json());
 
     return (
     <div>

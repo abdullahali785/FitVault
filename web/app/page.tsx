@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -14,7 +13,7 @@ type Product = {
     productUrl: string;
 };
 
-const BASE_URL = "http://localhost:3000";
+const API_BASE = "http://localhost:5000/api/v1/";
 
 export default function LandingPage() {
     const [offers, setOffers] = useState<Product[]>([]);
@@ -23,7 +22,7 @@ export default function LandingPage() {
     useEffect(() => {
         async function fetchLatestOffers() {
             try {
-                const res = await fetch(BASE_URL + "/api/v1/offers?availability=IN_STOCK&sort=date");
+                const res = await fetch(API_BASE + "offers?availability=IN_STOCK&sort=date");
                 const data = await res.json();
                 setOffers(data);
             } catch (err) {

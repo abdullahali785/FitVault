@@ -1,8 +1,8 @@
+const API_BASE = "http://localhost:5000/api/v1/";
+
 export default async function ProductsPage(query : any) {
-    const products = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/products?${query}`,
-        { cache: "no-store" }
-    ).then(res => res.json());
+    const products = await fetch(`${API_BASE}/products?${query}`, { cache: "no-store" })
+        .then(res => res.json());
 
     return (
     <div>
