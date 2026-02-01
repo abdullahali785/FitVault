@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
         res.json(products);
     }
     catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ error: 'GET /products failed' });
     }
 });
@@ -41,7 +41,7 @@ async function fetchProducts(query) {
     const skip = (page - 1) * take;
     const orderBy = sort === "date" ? { createdAt: "desc" } : { updatedAt: "desc" };
     const where = {
-        ...(category && { category: { category: category } }),
+        ...(category && { category }),
         ...(brand && { brand: { name: brand } }),
         ...(minPrice || maxPrice ? {
             offers: {

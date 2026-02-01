@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
         const products = await fetchProducts(req.query);
         res.json(products);
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ error: 'GET /products failed' });
     }
 });
@@ -54,8 +54,7 @@ async function fetchProducts(query: any) {
         sort === "date" ? { createdAt: "desc" as const } : { updatedAt: "desc" as const };
 
     const where = {
-        ...(category && { category: { category: category } }), 
-        // This line has some issue
+        ...(category && { category }),
 
         ...(brand && { brand: { name: brand } }),
 
