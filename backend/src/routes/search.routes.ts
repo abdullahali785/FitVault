@@ -13,19 +13,21 @@ router.get('/', async (req, res) => {
         res.json(results);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'GET /search failed' });
     }
 });
 
 // Takes user input and returns relevant products (sorted by relevance)
 async function searchDb(request: any) {
-    const query = request.query?.trim();
+    const query = request.product.trim();
+    console.log("Query: " + query);
 
     if (!query || query.length < 2) {
-        return { query: query ?? "", results: [] };
+        return { query: query ?? "", results: ["No results found"] };
     }
 
     const normalized = query.toLowerCase();
+    console.log("Normalized: " + normalized);
 
     const brands = await prisma.brand.findMany({
         where: {
@@ -33,6 +35,7 @@ async function searchDb(request: any) {
         },
         take: 3,
     });
+    // There can be some issue here 
 
     const products = await prisma.product.findMany({
         where: {
@@ -43,9 +46,10 @@ async function searchDb(request: any) {
             offers: {
                 where: {
                     price: { not: null },
-                    lastScrapedAt: {
-                        gte: new Date(Date.now() - MAX_PRICE_AGE),
-                    },
+                    availability: { not: "OUT_OF_STOCK" },
+                    // lastScrapedAt: {
+                    //     gte: new Date(Date.now() - MAX_PRICE_AGE),
+                    // },
                 },
                 select: {
                     price: true,

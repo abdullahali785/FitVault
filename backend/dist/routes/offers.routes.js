@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'GET /offers failed' });
     }
 });
 // Returns all offers from Offer table 
@@ -32,7 +32,7 @@ async function fetchOffers(query) {
         } : {}),
         price: { not: null },
         // lastScrapedAt: {gte: new Date(Date.now() - MAX_PRICE_AGE)},
-        // Some issue here 
+        // Enable after a api scraper is set up to keep prices fresh
     };
     const include = {
         product: {

@@ -11,16 +11,18 @@ router.get('/', async (req, res) => {
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'GET /search failed' });
     }
 });
 // Takes user input and returns relevant products (sorted by relevance)
 async function searchDb(request) {
-    const query = request.query?.trim();
+    const query = request.product.trim();
+    console.log("Query: " + query);
     if (!query || query.length < 2) {
-        return { query: query ?? "", results: [] };
+        return { query: query ?? "", results: ["No results found"] };
     }
     const normalized = query.toLowerCase();
+    console.log("Normalized: " + normalized);
     const brands = await prisma.brand.findMany({
         where: {
             name: { contains: normalized, mode: "insensitive" },
@@ -36,9 +38,10 @@ async function searchDb(request) {
             offers: {
                 where: {
                     price: { not: null },
-                    lastScrapedAt: {
-                        gte: new Date(Date.now() - MAX_PRICE_AGE),
-                    },
+                    availability: { not: "OUT_OF_STOCK" },
+                    // lastScrapedAt: {
+                    //     gte: new Date(Date.now() - MAX_PRICE_AGE),
+                    // },
                 },
                 select: {
                     price: true,

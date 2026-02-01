@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api/v1/";
+const API_BASE = "http://localhost:4000/api/v1/";
 
 export default async function OffersPage() {
     const offers = await fetch(`${API_BASE}offers?availability=IN_STOCK&sort=date`, { cache: "no-store" })
