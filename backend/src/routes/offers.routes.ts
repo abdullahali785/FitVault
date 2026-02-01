@@ -17,13 +17,13 @@ router.get('/', async (req, res) => {
 });
 
 // Returns all offers from Offer table 
-async function fetchOffers(query: any) {
+ async function fetchOffers(query: any) {
     const {
+        availability,
+        sort,
         retailer,
         minPrice,
         maxPrice,
-        availability,
-        sort,
         limit,
         offset,
     } = query;
@@ -37,9 +37,9 @@ async function fetchOffers(query: any) {
         { lastScrapedAt: "desc" as const };
 
     const where = {
-        ...(retailer && { retailer: retailer.toUpperCase() }),
         ...(availability && { availability }),
-
+        ...(retailer && { retailer: retailer.toUpperCase() }),
+        
         ...(minPrice || maxPrice ? {
             price: {
                 ...(minPrice && { gte: Number(minPrice) }),
@@ -48,9 +48,8 @@ async function fetchOffers(query: any) {
         } : {}),
 
         price: { not: null },
-        lastScrapedAt: {
-            gte: new Date(Date.now() - MAX_PRICE_AGE),
-        },
+        // lastScrapedAt: {gte: new Date(Date.now() - MAX_PRICE_AGE)},
+        // Enable after a api scraper is set up to keep prices fresh
     };
 
     const include = {
@@ -62,9 +61,7 @@ async function fetchOffers(query: any) {
                 model: true,
                 sku: true,
                 imageUrl: true,
-                brand: {
-                    select: { name: true },
-                },
+                brand: {select: { name: true }},
             },
         },
     };
@@ -80,7 +77,7 @@ async function fetchOffers(query: any) {
     return offers.map(o => ({
         id: o.id,
         retailer: o.retailer,
-        price: o.price,
+        price: round(o.price),
         currency: o.currency ?? "USD",
         availability: o.availability,
         productUrl: o.productUrl,
@@ -100,3 +97,11 @@ async function fetchOffers(query: any) {
 }
 
 export default router;
+
+function round(price: any) {
+    if (price === null || price === undefined) {
+        return 0;
+    }
+
+    return Math.round(price);
+}

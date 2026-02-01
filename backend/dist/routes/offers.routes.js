@@ -15,15 +15,15 @@ router.get('/', async (req, res) => {
 });
 // Returns all offers from Offer table 
 async function fetchOffers(query) {
-    const { retailer, minPrice, maxPrice, availability, sort, limit, offset, } = query;
+    const { availability, sort, retailer, minPrice, maxPrice, limit, offset, } = query;
     const take = Number(limit ?? 20);
     const skip = Number(offset ?? 0);
     const orderBy = sort === "date" ? { createdAt: "desc" } :
         sort === "price" ? { price: "asc" } :
             { lastScrapedAt: "desc" };
     const where = {
-        ...(retailer && { retailer: retailer.toUpperCase() }),
         ...(availability && { availability }),
+        ...(retailer && { retailer: retailer.toUpperCase() }),
         ...(minPrice || maxPrice ? {
             price: {
                 ...(minPrice && { gte: Number(minPrice) }),
@@ -31,9 +31,8 @@ async function fetchOffers(query) {
             },
         } : {}),
         price: { not: null },
-        lastScrapedAt: {
-            gte: new Date(Date.now() - MAX_PRICE_AGE),
-        },
+        // lastScrapedAt: {gte: new Date(Date.now() - MAX_PRICE_AGE)},
+        // Some issue here 
     };
     const include = {
         product: {
@@ -44,9 +43,7 @@ async function fetchOffers(query) {
                 model: true,
                 sku: true,
                 imageUrl: true,
-                brand: {
-                    select: { name: true },
-                },
+                brand: { select: { name: true } },
             },
         },
     };
@@ -60,7 +57,7 @@ async function fetchOffers(query) {
     return offers.map(o => ({
         id: o.id,
         retailer: o.retailer,
-        price: o.price,
+        price: round(o.price),
         currency: o.currency ?? "USD",
         availability: o.availability,
         productUrl: o.productUrl,
@@ -78,4 +75,10 @@ async function fetchOffers(query) {
     }));
 }
 export default router;
+function round(price) {
+    if (price === null || price === undefined) {
+        return 0;
+    }
+    return Math.round(price);
+}
 //# sourceMappingURL=offers.routes.js.map
