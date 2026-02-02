@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from "../prisma.js";
 const router = Router();
 const MAX_PRICE_AGE = 1000 * 60 * 60 * 24; // 24 Hours
 router.get('/', async (req, res) => {

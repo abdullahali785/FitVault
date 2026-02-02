@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from "../prisma.js";
 const router = Router();
 const SEARCH_LIMIT = 10;
 const MAX_PRICE_AGE = 1000 * 60 * 60 * 24; // 24 Hours
@@ -16,19 +15,20 @@ router.get('/', async (req, res) => {
 });
 // Takes user input and returns relevant products (sorted by relevance)
 async function searchDb(request) {
-    const query = request.product.trim();
+    const query = request.product?.trim();
     console.log("Query: " + query);
     if (!query || query.length < 2) {
         return { query: query ?? "", results: ["No results found"] };
     }
     const normalized = query.toLowerCase();
     console.log("Normalized: " + normalized);
-    const brands = await prisma.brand.findMany({
-        where: {
-            name: { contains: normalized, mode: "insensitive" },
-        },
-        take: 3,
-    });
+    // const brands = await prisma.brand.findMany({
+    //     where: {
+    //         name: { contains: normalized, mode: "insensitive" },
+    //     },
+    //     take: 3,
+    // });
+    // There can be some issue here 
     const products = await prisma.product.findMany({
         where: {
             name: { contains: normalized, mode: "insensitive" },
@@ -54,13 +54,12 @@ async function searchDb(request) {
         take: 20,
     });
     // Normalize Brands
-    const brandResults = brands.map(b => ({
-        type: "brand",
-        id: b.id,
-        title: b.name,
-        subtitle: "Brand",
-        _rankHint: exactMatchScore(b.name, normalized),
-    }));
+    // const brandResults = brands.map(b => ({
+    //     type: "brand",
+    //     id: b.id,
+    //     name: b.name,
+    //     _rankHint: exactMatchScore(b.name, normalized),
+    // }));
     // Normalize Products
     const productResults = products.map(p => {
         const prices = p.offers
@@ -69,14 +68,15 @@ async function searchDb(request) {
         return {
             type: "product",
             id: p.id,
-            title: p.name,
-            subtitle: p.brand.name,
+            name: p.name,
+            brand: p.brand.name,
             imageUrl: p.imageUrl,
             lowestPrice: prices.length ? Math.min(...prices) : null,
             _rankHint: exactMatchScore(p.name, normalized),
         };
     });
-    const results = [...productResults, ...brandResults].sort((a, b) => {
+    // const results = [...productResults, ...brandResults].sort((a, b) => {
+    const results = [...productResults].sort((a, b) => {
         if (a._rankHint !== b._rankHint) {
             return b._rankHint - a._rankHint;
         }
@@ -85,10 +85,7 @@ async function searchDb(request) {
         }
         return 0;
     }).slice(0, SEARCH_LIMIT).map(({ _rankHint, ...rest }) => rest);
-    return {
-        query: query,
-        results,
-    };
+    return { query: query, results };
 }
 function exactMatchScore(text, query) {
     const t = text.toLowerCase();
