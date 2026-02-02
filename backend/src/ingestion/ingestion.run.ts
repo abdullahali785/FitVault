@@ -1,11 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../prisma.js";
 
 import { fetchGoatProducts } from "./goat/goat.fetch.js";
 import { ingestGoatProducts } from "./goat/goat.ingest.js";
 import { fetchStockXProducts } from "./stockx/stockx.fetch.js";
 import { ingestStockXProducts } from "./stockx/stockx.ingest.js";
-
-const prisma = new PrismaClient();
 
 async function run() {
     const goatProducts = await fetchGoatProducts();
