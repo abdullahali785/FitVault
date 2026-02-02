@@ -17,20 +17,63 @@ router.get('/', async (req, res) => {
 
 // Takes user input and returns relevant products (sorted by relevance)
 async function searchDb(request: any) {
-    const query = request.product;
+    const query = typeof request.product === "string" ? request.product.trim() : "";
     console.log("Query: " + query);
 
     if (!query || query.length < 2) {
-        return { query: query ?? "", results: ["No results found"] };
+        return { query, results: [] };
     }
 
     const tokens = tokenize(query);
     console.log("Tokens: " + tokens);
 
+    if (tokens.length === 0) {
+        return { query, results: [] };
+    }
+
     // Products from DB
-    const products = await prisma.product.findMany({
+    const productsPrimary = await prisma.product.findMany({
         where: {
-            AND: tokens.map(token => ({
+            OR: [
+                {AND: tokens.map(token => ({
+                    OR: [
+                        { name: { contains: token, mode: "insensitive" } },
+                        { brand: { name: { contains: token, mode: "insensitive" } } },
+                    ],
+                }))},
+                {OR: tokens.map(token => ({
+                    OR: [
+                        { name: { contains: token, mode: "insensitive" } },
+                        { brand: { name: { contains: token, mode: "insensitive" } } },
+                    ],
+                }))},
+            ],
+        },
+        include: {
+            brand: true,
+            offers: {
+                where: {
+                    availability: { not: "OUT_OF_STOCK" },
+                    price: { not: null },
+                    // lastScrapedAt: {
+                    //     gte: new Date(Date.now() - MAX_PRICE_AGE),
+                    // },
+                },
+                select: {
+                    price: true,
+                    currency: true,
+                    retailer: true,
+                    lastScrapedAt: true,
+                },
+            },
+        },
+        take: 50,
+    });
+
+    // if (productsPrimary.length < 10) {
+    const productsFallback = await prisma.product.findMany({
+        where: {
+            OR: tokens.map(token => ({
                 OR: [
                     { name: { contains: token, mode: "insensitive" } },
                     { brand: { name: { contains: token, mode: "insensitive" } } },
@@ -57,6 +100,15 @@ async function searchDb(request: any) {
         },
         take: 50,
     });
+    // };
+
+    const productMap = new Map<string, typeof productsPrimary[number]>();
+
+    productsPrimary.forEach(p => productMap.set(p.id, p));
+    productsFallback.forEach(p => productMap.set(p.id, p));
+
+    const products = Array.from(productMap.values());
+
 
     // Normalized products data
     const productResults = products.map(p => {
@@ -79,10 +131,7 @@ async function searchDb(request: any) {
     const brands = await prisma.brand.findMany({
         where: {
             AND: tokens.map(token => ({
-                OR: [
-                    { name: { contains: token, mode: "insensitive" } },
-                    { brand: { name: { contains: token, mode: "insensitive" } } },
-                ],
+                name: { contains: token, mode: "insensitive" },
             })),
         },
         take: 10,
@@ -97,7 +146,7 @@ async function searchDb(request: any) {
     }));
 
     // Data order based on relevance
-    const results = [...productResults, ...brandResults]
+    const results = [...productResults, ...brandResults.map(b => ({ ...b, _rankHint: b._rankHint - 5 }))]
         .filter(r => r._rankHint > 0)
         .sort((a, b) => b._rankHint - a._rankHint)
         .slice(0, SEARCH_LIMIT)
@@ -116,14 +165,17 @@ function tokenize(q: string) {
 }
 
 function relevanceScore(name: string, brand: string, tokens: string[]) {
-    const text = `${brand} ${name}`.toLowerCase();
+    name = name.toLowerCase();
+    brand = brand.toLowerCase();
+
+    const text = `${brand} ${name}`;
 
     let score = 0;
     for (const token of tokens) {
-        if (text === token) score += 10;
+        if (name === token) score += 10;
         else if (text.startsWith(token)) score += 6;
-        else if (name.toLowerCase().includes(token)) score += 4;
-        else if (brand.toLowerCase().includes(token)) score += 5;
+        else if (name.includes(token)) score += 5;
+        else if (brand.includes(token)) score += 3;
         else if (text.includes(token)) score += 2;
     }
 
