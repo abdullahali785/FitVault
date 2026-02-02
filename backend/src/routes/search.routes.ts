@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { prisma } from "../prisma.js";
 const router = Router();
 
-const SEARCH_LIMIT = 10;
+const SEARCH_LIMIT = 50;
 const MAX_PRICE_AGE = 1000 * 60 * 60 * 24;  // 24 Hours
 
 router.get('/', async (req, res) => {
@@ -17,34 +17,32 @@ router.get('/', async (req, res) => {
 
 // Takes user input and returns relevant products (sorted by relevance)
 async function searchDb(request: any) {
-    const query = request.product?.trim();
+    const query = request.product;
     console.log("Query: " + query);
 
     if (!query || query.length < 2) {
         return { query: query ?? "", results: ["No results found"] };
     }
 
-    const normalized = query.toLowerCase();
-    console.log("Normalized: " + normalized);
+    const tokens = tokenize(query);
+    console.log("Tokens: " + tokens);
 
-    // const brands = await prisma.brand.findMany({
-    //     where: {
-    //         name: { contains: normalized, mode: "insensitive" },
-    //     },
-    //     take: 3,
-    // });
-    // There can be some issue here 
-
+    // Products from DB
     const products = await prisma.product.findMany({
         where: {
-            name: { contains: normalized, mode: "insensitive" },
+            AND: tokens.map(token => ({
+                OR: [
+                    { name: { contains: token, mode: "insensitive" } },
+                    { brand: { name: { contains: token, mode: "insensitive" } } },
+                ],
+            })),
         },
         include: {
             brand: true,
             offers: {
                 where: {
-                    price: { not: null },
                     availability: { not: "OUT_OF_STOCK" },
+                    price: { not: null },
                     // lastScrapedAt: {
                     //     gte: new Date(Date.now() - MAX_PRICE_AGE),
                     // },
@@ -57,18 +55,10 @@ async function searchDb(request: any) {
                 },
             },
         },
-        take: 20,
+        take: 50,
     });
-    
-    // Normalize Brands
-    // const brandResults = brands.map(b => ({
-    //     type: "brand",
-    //     id: b.id,
-    //     name: b.name,
-    //     _rankHint: exactMatchScore(b.name, normalized),
-    // }));
 
-    // Normalize Products
+    // Normalized products data
     const productResults = products.map(p => {
         const prices = p.offers
             .map(o => o.price)
@@ -81,34 +71,78 @@ async function searchDb(request: any) {
             brand: p.brand.name,
             imageUrl: p.imageUrl,
             lowestPrice: prices.length ? Math.min(...prices) : null,
-            _rankHint: exactMatchScore(p.name, normalized),
+            _rankHint: relevanceScore(p.name, p.brand.name, tokens),
         };
     });
 
-    // const results = [...productResults, ...brandResults].sort((a, b) => {
-    const results = [...productResults].sort((a, b) => {
-        if (a._rankHint !== b._rankHint) {
-            return b._rankHint - a._rankHint;
-        }
+    // Brands from DB
+    const brands = await prisma.brand.findMany({
+        where: {
+            AND: tokens.map(token => ({
+                OR: [
+                    { name: { contains: token, mode: "insensitive" } },
+                    { brand: { name: { contains: token, mode: "insensitive" } } },
+                ],
+            })),
+        },
+        take: 10,
+    });
 
-        if (a.type !== b.type) {
-            return a.type === "product" ? -1 : 1;
-        }
-        return 0;
+    // Normalized brands data
+    const brandResults = brands.map(b => ({
+        type: "brand",
+        id: b.id,
+        name: b.name,
+        _rankHint: brandScore(b.name, tokens),
+    }));
 
-    }).slice(0, SEARCH_LIMIT).map(({ _rankHint, ...rest }) => rest);
+    // Data order based on relevance
+    const results = [...productResults, ...brandResults]
+        .filter(r => r._rankHint > 0)
+        .sort((a, b) => b._rankHint - a._rankHint)
+        .slice(0, SEARCH_LIMIT)
+        .map(({ _rankHint, ...rest }) => rest);
 
     return {query: query, results};
 }
 
-function exactMatchScore(text: string, query: string) {
-    const t = text.toLowerCase();
 
-    if (t === query) return 3;
-    if (t.startsWith(query)) return 2;
-    if (t.includes(query)) return 1;
+function tokenize(q: string) {
+    return q
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(t => t.length > 1);
+}
 
-    return 0;
+function relevanceScore(name: string, brand: string, tokens: string[]) {
+    const text = `${brand} ${name}`.toLowerCase();
+
+    let score = 0;
+    for (const token of tokens) {
+        if (text === token) score += 10;
+        else if (text.startsWith(token)) score += 6;
+        else if (name.toLowerCase().includes(token)) score += 4;
+        else if (brand.toLowerCase().includes(token)) score += 5;
+        else if (text.includes(token)) score += 2;
+    }
+
+    score += tokens.length * 2;
+    return score;
+}
+
+function brandScore(name: string, tokens: string[]) {
+    const n = name.toLowerCase();
+
+    let score = 0;
+    for (const t of tokens) {
+        if (n === t) score += 8;
+        else if (n.startsWith(t)) score += 5;
+        else if (n.includes(t)) score += 3;
+    }
+
+    score -= Math.max(0, tokens.length - 1) * 2;
+    return score;
 }
 
 export default router;
