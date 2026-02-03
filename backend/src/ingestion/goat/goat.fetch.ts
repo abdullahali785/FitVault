@@ -1,4 +1,4 @@
-import { mapCategory } from "../category.mapper.js";
+import { mapCategory } from "../category.mapper.ts";
 import dotenv from 'dotenv';
 dotenv.config();
 

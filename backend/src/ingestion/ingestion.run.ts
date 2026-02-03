@@ -1,14 +1,14 @@
-import { prisma } from "../prisma.js";
+import { prisma } from "../prisma.ts";
 
-import { fetchGoatProducts } from "./goat/goat.fetch.js";
-import { ingestGoatProducts } from "./goat/goat.ingest.js";
-import { fetchStockXProducts } from "./stockx/stockx.fetch.js";
-import { ingestStockXProducts } from "./stockx/stockx.ingest.js";
+import { fetchGoatProducts } from "./goat/goat.fetch.ts";
+import { ingestGoatProducts } from "./goat/goat.ingest.ts";
+import { fetchStockXProducts } from "./stockx/stockx.fetch.ts";
+import { ingestStockXProducts } from "./stockx/stockx.ingest.ts";
 
 async function run() {
-    const goatProducts = await fetchGoatProducts();
+    // const goatProducts = await fetchGoatProducts();
     // console.log(goatProducts);
-    await ingestGoatProducts(goatProducts);
+    // await ingestGoatProducts(goatProducts);
 
     const stockxProducts = await fetchStockXProducts();
     // console.log(stockxProducts);

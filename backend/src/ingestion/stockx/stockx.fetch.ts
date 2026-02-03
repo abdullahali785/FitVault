@@ -1,12 +1,12 @@
-import { mapCategory } from "../category.mapper.js";
+import { mapCategory } from "../category.mapper.ts";
 import dotenv from 'dotenv';
 dotenv.config();
 
 const STOCKX_URL =
     "https://api.kicks.dev/v3/stockx/products" + 
-    // "?display%5Btraits%5D=true&display%5Bvariants%5D=true" + 
-    // "&display%5Bidentifiers%5D=true&display%5Bprices%5D=true" + 
-    // "&display%5Bstatistics%5D=true" + 
+    "?display%5Btraits%5D=true&display%5Bvariants%5D=true" + 
+    "&display%5Bidentifiers%5D=true&display%5Bprices%5D=true" + 
+    "&display%5Bstatistics%5D=true" + 
     "&query=" + 
     "&filters=brand+%3D+%27Nike%27&sort=rank&page=&limit=&market=US&currency=USD";
     // "&filters=brand+%3D+%27Adidas%27&sort=rank&page=&limit=&market=US&currency=USD";

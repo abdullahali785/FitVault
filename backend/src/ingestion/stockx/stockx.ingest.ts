@@ -1,12 +1,11 @@
 import { Retailer, Availability, DataSource } from "@prisma/client";
-import type { ExtractedProduct } from "./stockx.fetch.js";
-import { prisma } from "../../prisma.js";
+import type { ExtractedProduct } from "./stockx.fetch.ts";
+import { prisma } from "../../prisma.ts";
 
 export async function ingestStockXProducts(products: ExtractedProduct[]) {
     for (const product of products) {
         await ingestSingleProduct(product);
     }
-
     console.log(`Ingested ${products.length} StockX products`);
 }
 
@@ -23,7 +22,7 @@ async function ingestSingleProduct(product: ExtractedProduct) {
             update: {
                 name: product.name,
                 model: product.model,
-                slug: slugify(`${brand.name}-${product.name ?? "product"}`),
+                slug: slug(product.sourceProductId, product.name),
                 category: product.category,
                 rawCategory: product.rawCategory,
                 gender: product.gender,
@@ -35,7 +34,7 @@ async function ingestSingleProduct(product: ExtractedProduct) {
                 brandId: brand.id,
                 name: product.name,
                 model: product.model,
-                slug: slugify(`${brand.name}-${product.name ?? "product"}`),
+                slug: slug(product.sourceProductId, product.name),
                 sku: product.sku,
                 category: product.category,
                 rawCategory: product.rawCategory,
@@ -89,10 +88,13 @@ function mapAvailability(value: ExtractedProduct["availability"]): Availability 
     }
 }
 
-function slugify(text: string) {
-    return text
-        .toLowerCase()
+function slug(id: string, name: string) {
+    id = id.substring(0, 6);
+    name = name
         .trim()
+        .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
+
+    return `${name}:${id}`;
 }
