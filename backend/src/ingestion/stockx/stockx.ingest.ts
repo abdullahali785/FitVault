@@ -1,6 +1,6 @@
 import { Retailer, Availability, DataSource } from "@prisma/client";
-import type { ExtractedProduct } from "./stockx.fetch.ts";
-import { prisma } from "../../prisma.ts";
+import type { ExtractedProduct } from "./stockx.fetch.js";
+import { prisma } from "../../prisma.js";
 
 export async function ingestStockXProducts(products: ExtractedProduct[]) {
     for (const product of products) {

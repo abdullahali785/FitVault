@@ -4,9 +4,9 @@ dotenv.config();
 const STOCKX_URL = "https://api.kicks.dev/v3/stockx/products" +
     "?display%5Btraits%5D=true&display%5Bvariants%5D=true" +
     "&display%5Bidentifiers%5D=true&display%5Bprices%5D=true" +
-    "&display%5Bstatistics%5D=true&query=" +
-    // "&filters=brand+%3D+%27Nike%27&sort=rank&page=&limit=&market=US&currency=USD";
-    "&filters=brand+%3D+%27Adidas%27&sort=rank&market=US&currency=USD";
+    "&display%5Bstatistics%5D=true" +
+    "&query=" +
+    "&filters=brand+%3D+%27Nike%27&sort=rank&page=&limit=&market=US&currency=USD";
 export async function fetchStockXProducts() {
     const response = await fetch(STOCKX_URL, {
         headers: {

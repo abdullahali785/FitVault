@@ -1,6 +1,6 @@
 import { Retailer, Availability, DataSource } from "@prisma/client";
-import type { ExtractedProduct } from "./goat.fetch.ts";
-import { prisma } from "../../prisma.ts";
+import type { ExtractedProduct } from "./goat.fetch.js";
+import { prisma } from "../../prisma.js";
 
 export async function ingestGoatProducts(products: ExtractedProduct[]) {
     for (const product of products) {

@@ -18,14 +18,14 @@ router.get('/', async (req, res) => {
 // Takes user input and returns relevant products (sorted by relevance)
 async function searchDb(request: any) {
     const query = typeof request.product === "string" ? request.product.trim() : "";
-    console.log("Query: " + query);
+    // console.log("Query: " + query);
 
     if (!query || query.length < 2) {
         return { query, results: [] };
     }
 
     const tokens = tokenize(query);
-    console.log("Tokens: " + tokens);
+    // console.log("Tokens: " + tokens);
 
     if (tokens.length === 0) {
         return { query, results: [] };

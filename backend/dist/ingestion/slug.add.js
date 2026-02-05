@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from "../prisma.js";
 function slugify(text) {
     return text
         .toLowerCase()
@@ -7,27 +6,20 @@ function slugify(text) {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
 }
+function normalizeID(id) {
+    return id.slice(0, 6);
+}
 async function main() {
     const products = await prisma.product.findMany({ include: { brand: true } });
-    const usedSlugs = new Set();
     for (const p of products) {
-        if (!p.slug) {
-            let baseSlug = slugify(`${p.brand.name}-${p.name ?? "product"}`);
-            let slug = baseSlug;
-            let i = 1;
-            while (usedSlugs.has(slug) || (await prisma.product.findUnique({ where: { slug } }))) {
-                slug = `${baseSlug}-${i++}`;
-            }
-            await prisma.product.update({
-                where: { id: p.id },
-                data: { slug },
-            });
-            usedSlugs.add(slug);
-            console.log(`Updated ${p.id} → ${slug}`);
-        }
+        const slug = `${slugify(p.name)}:${normalizeID(p.id)}`;
+        await prisma.product.update({
+            where: { id: p.id },
+            data: { slug },
+        });
     }
 }
-main()
-    .catch(console.error)
-    .finally(() => prisma.$disconnect());
+// main()
+//   .catch(console.error)
+//   .finally(() => prisma.$disconnect());
 //# sourceMappingURL=slug.add.js.map
