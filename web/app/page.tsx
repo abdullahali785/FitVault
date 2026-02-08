@@ -2,28 +2,39 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type Product = {
-    id: string;
-    name: string;
-    imageUrl: string;
-    price: number;
-    brand: string;
-    slug: string;
-    model: string;
-    productUrl: string;
+type Offer = {
+    id: string,
+    retailer: string,
+    price: number,
+    currency: string,
+    availability: string,
+    productUrl: string,
+    affiliateUrl: string,
+    lastScrapedAt: string,
+
+    product: {
+        id: string,
+        name: string,
+        slug: string,
+        model: string,
+        sku: string,
+        imageUrl: string,
+        brand: string,
+    }
 };
 
 const API_BASE = "http://localhost:4000/api/v1";
 
 export default function LandingPage() {
-    const [offers, setOffers] = useState<Product[]>([]);
+    const [offers, setOffers] = useState<Offer[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchLatestOffers() {
             try {
-                const res = await fetch(API_BASE + "/offers?availability=IN_STOCK&sort=date");
+                const res = await fetch(API_BASE + "/offers?availability=IN_STOCK&sort=price");
                 const data = await res.json();
+                console.log(data);
                 setOffers(data);
             } catch (err) {
                 console.error("Failed to fetch latest offers", err);
@@ -56,14 +67,14 @@ export default function LandingPage() {
 
                 {loading ? (<p className="text-gray-500">Loading latest offers...</p>) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                        {offers.map((product) => (
-                            <Link key={product.id} href={`/products/${product.slug}`} className="rounded-lg border bg-white shadow-sm hover:shadow-md transition text-left">
-                                <img src={product.imageUrl} alt={product.name} className="h-40 w-full object-cover rounded-t-lg"/>
+                        {offers.map((offer) => (
+                            <Link key={offer.product.id} href={`/products/${offer.product.slug}`} className="rounded-lg border bg-white shadow-sm hover:shadow-md transition text-left">
+                                <img src={offer.product.imageUrl} alt={offer.product.name} className="h-40 w-full object-cover rounded-t-lg"/>
 
                                 <div className="p-4 space-y-1">
-                                    <p className="text-xs text-gray-500">{product.brand}</p>
-                                    <h3 className="text-sm font-semibold line-clamp-2">{product.name}</h3>
-                                    <p className="text-lg font-bold">${product.price}</p>
+                                    <p className="text-xs text-gray-500">{offer.product.brand}</p>
+                                    <h3 className="text-sm font-semibold line-clamp-2">{offer.product.name}</h3>
+                                    <p className="text-lg font-bold">${offer.price}</p>
                                 </div>
                             </Link>
                         ))}
