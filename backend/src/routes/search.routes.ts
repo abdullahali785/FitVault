@@ -25,28 +25,32 @@ async function searchDb(request: any) {
     }
 
     const tokens = tokenize(query);
-    // console.log("Tokens: " + tokens);
 
     if (tokens.length === 0) {
         return { query, results: [] };
     }
 
+    const categories = extractCategories(tokens);
+
     // Products from DB
     const productsPrimary = await prisma.product.findMany({
         where: {
-            OR: [
-                {AND: tokens.map(token => ({
-                    OR: [
-                        { name: { contains: token, mode: "insensitive" } },
-                        { brand: { name: { contains: token, mode: "insensitive" } } },
-                    ],
-                }))},
-                {OR: tokens.map(token => ({
-                    OR: [
-                        { name: { contains: token, mode: "insensitive" } },
-                        { brand: { name: { contains: token, mode: "insensitive" } } },
-                    ],
-                }))},
+            AND: [
+                ...(categories.length ? [{ category: { in: categories as any } }] : []),
+                {OR: [
+                    {AND: tokens.map(token => ({
+                        OR: [
+                            { name: { contains: token, mode: "insensitive" } },
+                            { brand: { name: { contains: token, mode: "insensitive" } } },
+                        ],
+                    }))},
+                    {OR: tokens.map(token => ({
+                        OR: [
+                            { name: { contains: token, mode: "insensitive" } },
+                            { brand: { name: { contains: token, mode: "insensitive" } } },
+                        ],
+                    }))},
+                ]},
             ],
         },
         include: {
@@ -73,12 +77,15 @@ async function searchDb(request: any) {
     // if (productsPrimary.length < 10) {
     const productsFallback = await prisma.product.findMany({
         where: {
-            OR: tokens.map(token => ({
-                OR: [
-                    { name: { contains: token, mode: "insensitive" } },
-                    { brand: { name: { contains: token, mode: "insensitive" } } },
-                ],
-            })),
+            AND: [
+                ...(categories.length ? [{ category: { in: categories as any } }] : []),
+                {OR: tokens.map(token => ({
+                    OR: [
+                        { name: { contains: token, mode: "insensitive" } },
+                        { brand: { name: { contains: token, mode: "insensitive" } } },
+                    ],
+                }))},
+            ],
         },
         include: {
             brand: true,
@@ -123,7 +130,7 @@ async function searchDb(request: any) {
             brand: p.brand.name,
             imageUrl: p.imageUrl,
             lowestPrice: prices.length ? Math.min(...prices) : null,
-            _rankHint: relevanceScore(p.name, p.brand.name, tokens),
+            _rankHint: relevanceScore(p.name, p.brand.name, tokens, p.category),
         };
     });
 
@@ -164,7 +171,7 @@ function tokenize(q: string) {
       .filter(t => t.length > 1);
 }
 
-function relevanceScore(name: string, brand: string, tokens: string[]) {
+function relevanceScore(name: string, brand: string, tokens: string[], category?: string) {
     name = name.toLowerCase();
     brand = brand.toLowerCase();
 
@@ -177,6 +184,10 @@ function relevanceScore(name: string, brand: string, tokens: string[]) {
         else if (name.includes(token)) score += 5;
         else if (brand.includes(token)) score += 3;
         else if (text.includes(token)) score += 2;
+
+        if (category && category.toLowerCase().includes(token)) {
+            score += 6; 
+        }
     }
 
     score += tokens.length * 2;
@@ -195,6 +206,22 @@ function brandScore(name: string, tokens: string[]) {
 
     score -= Math.max(0, tokens.length - 1) * 2;
     return score;
+}
+
+function extractCategories(tokens: string[]) {
+    const map: Record<string, string> = {
+        shoe: "SHOES",
+        shoes: "SHOES",
+        sneaker: "SHOES",
+        sneakers: "SHOES",
+        apparel: "APPAREL",
+        clothing: "APPAREL",
+        clothes: "APPAREL",
+    };
+
+    return tokens
+        .map(t => map[t])
+        .filter(Boolean);
 }
 
 export default router;
